@@ -14,6 +14,5 @@ EOF
 else
     NAMESPACE_NAME=$(jr -r '.[0].object.metadata.name $BINDING_CONTEXT_PATH')
     DOCKER_PASSWORD=$(aws ecr get-login-password --region $AWS_REGION)
-    SECRET=$(/usr/local/bin/create-ecr-credentials.sh $NAMESPACE_NAME "$DOCKER_PASSWORD")
-    # TODO: apply secret
+    /usr/local/bin/create-ecr-credentials.sh $NAMESPACE_NAME "$DOCKER_PASSWORD" | kubectl apply -f -
 fi

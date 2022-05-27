@@ -4,12 +4,28 @@
 
 ## Installation
 
-Create a namespace and RBAC objects for the operator.
+Create a namespace and RBAC objects for the operator. Put the cluster role manifest into `ecr-rbac.yaml`:
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: ecr-credentials
+rules:
+- apiGroups: [""]
+  resources: ["namespaces"]
+  verbs: ["get", "watch", "list"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+```
+
+Create the objects by running the following commands:
 
 ```shell
 kubectl create namespace ecr-credentials
 kubectl create serviceaccount ecr-credentials-acc --namespace ecr-credentials
-kubectl create clusterrole ecr-credentials --verb=get,watch,list --resource=namespaces
+kubectl apply -f ecr-rbac.yaml
 kubectl create clusterrolebinding ecr-credentials --clusterrole=ecr-credentials --serviceaccount=ecr-credentials:ecr-credentials-acc
 ```
 
@@ -22,8 +38,9 @@ kubectl create secret generic ecr-credentials \
     --from-literal=AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE \
     --from-literal=AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY \
     --from-literal=ECR_SECRET_NAME=ecr-credentials \
-    --from-literal=ECR_LABEL_NAME=useEcrCredentials \
-    --from-literal=ECR_LABEL_VALUE=true
+    --from-literal=ECR_LABEL_NAME=ecrCredentials \
+    --from-literal=ECR_LABEL_VALUE=enabled \
+    --namespace=ecr-credentials
 ```
 
 The variables are described in the following table:
@@ -66,6 +83,6 @@ Now if you create a namespace with the configured label, a Docker registry secre
 
 ```shell
 kubectl create namespace example
-kubectl label namespace example useEcrCredentials=true
+kubectl label namespace example ecrCredentials=enabled
 kubectl get secrets -n example
 ```
