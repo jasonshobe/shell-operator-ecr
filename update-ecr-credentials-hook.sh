@@ -4,7 +4,7 @@ if [[ $1 == "--config" ]]; then
     cat <<EOF
 configVersion: v1
 schedule:
-- crontab: "0 */12 * * *"
+- crontab: "0 */10 * * *"
   allowFailure: true
 EOF
 else
