@@ -12,7 +12,10 @@ kubernetes:
       $ECR_LABEL_NAME: $ECR_LABEL_VALUE
 EOF
 else
-    NAMESPACE_NAME=$(jr -r '.[0].object.metadata.name $BINDING_CONTEXT_PATH')
-    DOCKER_PASSWORD=$(aws ecr get-login-password --region $AWS_REGION)
-    /usr/local/bin/create-ecr-credentials.sh $NAMESPACE_NAME "$DOCKER_PASSWORD" | kubectl apply -f -
+    NAMESPACE_NAME=$(jq -r '.[0] | select(.object != null) | .object.metadata.name' $BINDING_CONTEXT_PATH)
+
+    if [ ! -z "$NAMESPACE_NAME" ]; then
+        DOCKER_PASSWORD=$(aws ecr get-login-password --region $AWS_REGION)
+        /usr/local/bin/create-ecr-credentials.sh $NAMESPACE_NAME "$DOCKER_PASSWORD" | kubectl apply -f -
+    fi
 fi
